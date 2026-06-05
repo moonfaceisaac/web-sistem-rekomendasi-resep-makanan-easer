@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+model User {
+  user_id Int @id @default(autoincrement())
+
+  namaLengkap String
+
+  username String @unique
+
+  tanggalLahir DateTime
+
+  tempatLahir String
+
+  jenisKelamin Gender
+
+  email String @unique
+
+  password String
+
+  status Status @default(ACTIVE)
+
+  photo String?
+
+  ratings Rating[]
+
+  bookmarks Bookmark[]
+
+  createdAt DateTime @default(now())
+}
+
+model Admin {
+  admin_id Int @id @default(autoincrement())
+
+  namaLengkap String
+
+  username String @unique
+
+  email String @unique
+
+  password String
+
+  status Status @default(ACTIVE)
+
+  photo String?
+
+  createdAt DateTime @default(now())
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+model Recipe {
+  recipe_id Int @id @default(autoincrement())
+
+  title String
+
+  description String?
+
+  imageUrl String?
+
+  ingredients Json
+
+  cookingDirections Json
+
+  nutritions Json
+
+  ratings Rating[]
+
+  bookmarks Bookmark[]
+
+  createdAt DateTime @default(now())
+}
+
+model Rating {
+  rating_id Int @id @default(autoincrement())
+
+  user_id Int
+
+  recipe_id Int
+
+  score Int
+
+  user User @relation(fields: [user_id], references: [user_id])
+
+  recipe Recipe @relation(fields: [recipe_id], references: [recipe_id])
+
+  @@unique([user_id, recipe_id])
+}
+
+model Bookmark {
+  bookmark_id Int @id @default(autoincrement())
+
+  user_id Int
+
+  recipe_id Int
+
+  user User @relation(fields: [user_id], references: [user_id])
+
+  recipe Recipe @relation(fields: [recipe_id], references: [recipe_id])
+
+  @@unique([user_id, recipe_id])
+}
