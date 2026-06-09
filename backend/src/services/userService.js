@@ -1,4 +1,8 @@
 import { prisma } from "../config/prisma.js";
+import {
+  formatRecipesWithInteraction,
+  recipeInteractionSelect,
+} from "../helpers/recipeHelper.js";
 
 export async function getUserById(userId) {
   const user = await prisma.user.findUnique({
@@ -166,4 +170,81 @@ export async function createBookmark(userId, recipeId) {
       recipe_id: Number(recipeId),
     },
   });
+}
+
+export async function deleteBookmark(userId, recipeId) {
+  const existing = await prisma.bookmark.findFirst({
+    where: {
+      user_id: userId,
+      recipe_id: Number(recipeId),
+    },
+  });
+
+  if (existing) {
+    return await prisma.bookmark.delete({
+      where: {
+        bookmark_id: existing.bookmark_id,
+      },
+    });
+  }
+  throw new Error("Recipe is not bookmarked");
+}
+
+export async function createRating(userId, recipeId, score) {
+  const recipe = await prisma.recipe.findFirst({
+    where: {
+      recipe_id: Number(recipeId),
+    },
+  });
+  if (!recipe) {
+    throw Error("Recipe is not found");
+  }
+  const existing = await prisma.rating.findFirst({
+    where: {
+      recipe_id: Number(recipeId),
+      user_id: Number(userId),
+    },
+  });
+  if (existing) {
+    return await prisma.rating.update({
+      where: {
+        rating_id: existing.rating_id,
+      },
+      data: {
+        score: Number(score),
+      },
+    });
+  }
+  return await prisma.rating.create({
+    data: {
+      recipe_id: Number(recipeId),
+      user_id: Number(userId),
+      score: Number(score),
+    },
+  });
+}
+
+export async function deleteRating(userId, recipeId) {
+  const recipe = await prisma.recipe.findFirst({
+    where: {
+      recipe_id: Number(recipeId),
+    },
+  });
+  if (!recipe) {
+    throw Error("Recipe is not found");
+  }
+  const existing = await prisma.rating.findFirst({
+    where: {
+      recipe_id: Number(recipeId),
+      user_id: Number(userId),
+    },
+  });
+  if (existing) {
+    return await prisma.rating.delete({
+      where: {
+        rating_id: existing.rating_id,
+      },
+    });
+  }
+  throw Error("Recipe is not rated");
 }

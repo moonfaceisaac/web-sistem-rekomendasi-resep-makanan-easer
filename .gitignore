@@ -145,3 +145,5 @@ vite.config.ts.timestamp-*
 #images&dataset
 backend/public
 backend/dataset
+
+easer_recommendation_api

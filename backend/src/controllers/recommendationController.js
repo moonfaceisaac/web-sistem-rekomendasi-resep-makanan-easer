@@ -8,6 +8,9 @@ export async function handleGetRecommendations(req, res) {
   try {
     const userId = req.user.id;
     const recipeIds = await getUserInteractions(req.user.id);
+    console.log("USER:", userId)
+    console.log("INTERACTIONS:", recipeIds);
+    
 
     if (recipeIds.length === 0) {
       return res.json({

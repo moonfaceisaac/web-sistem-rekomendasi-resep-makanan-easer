@@ -1,5 +1,5 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 // export const useAuthStore = create(
 //   persist(
@@ -18,9 +18,9 @@ export const useAuthStore = create(
   persist(
     (set) => ({
       token: null,
-      user: null,
+      accountType: null,
+      user_id: null,
       hasInteraction: false,
-
       recommendations: [],
       recommendationDirty: true,
 
@@ -35,15 +35,20 @@ export const useAuthStore = create(
           recommendationDirty: true,
         }),
 
-      setAuth: (token, user) => set({ token, user }),
+      setAuth: (token, user) =>
+        set({
+          token,
+          accountType,
+          user_id,
+        }),
 
-      setHasInteraction: (val) =>
-        set({ hasInteraction: val }),
+      setHasInteraction: (val) => set({ hasInteraction: val }),
 
       logout: () =>
         set({
           token: null,
-          user: null,
+          accountType: null,
+          user_id: null,
           hasInteraction: false,
           recommendations: [],
           recommendationDirty: true,
@@ -51,21 +56,20 @@ export const useAuthStore = create(
     }),
     {
       name: "auth-storage",
-    }
-  )
+    },
+  ),
 );
 // import { create } from "zustand"
-import { login } from "../services/authService"
+// import { login } from "../services/authService"
 
-export const useAuth= create( (set)=>({ 
-  token:null,
-  accountType:null,
-  login: async( data )=>{
-    const res=
-    await login( data )
-    localStorage
-    .setItem( "token", res.token )
-      set(res)
-  }})
-)
-
+// export const useAuth= create( (set)=>({
+//   token:null,
+//   accountType:null,
+//   login: async( data )=>{
+//     const res=
+//     await login( data )
+//     localStorage
+//     .setItem( "token", res.token )
+//       set(res)
+//   }})
+// )

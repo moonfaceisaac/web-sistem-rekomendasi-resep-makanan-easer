@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-
+import { useAuthStore } from "../../store/authStore"
 export default function Navbar() {
+  const logout = useAuthStore((s)=> s.logout)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [focused, setFocused] = useState(false)
@@ -98,7 +99,7 @@ export default function Navbar() {
                 )}
                 <hr className="border-gray-100" />
                 <button
-                  onClick={() => { setOpen(false); navigate("/login") }}
+                  onClick={() => { setOpen(false); logout(); navigate("/login") }}
                   className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition"
                 >
                   Sign Out

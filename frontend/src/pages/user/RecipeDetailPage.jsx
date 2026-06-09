@@ -3,61 +3,98 @@ import { useState } from "react";
 import UserLayout from "../../components/layout/UserLayout";
 import RatingStars from "../../components/user/RatingStars";
 import { getRecipeById } from "../../services/recipeService";
+import { getRecipeByIdWithInteraction } from "../../services/recipeService";
 import { useEffect } from "react";
-// const DUMMY_RECIPE = {
-//   title: "RECIPE TITLE",
-//   image: null,
-//   overview: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut eros libero. Maecenas lorem ex, bibendum in efficitur vitae, vehicula in nibh. Pellentesque a malesuada mauris. Donec sed risus eu tortor volutpat vulputate.",
-//   avgRating: 0,
-//   totalRatings: 0,
-//   ingredients: [
-//     "Lorem ipsum dolor sit amet",
-//     "Consectetur adipiscing elit",
-//     "Nulla volutpat aliquam velit",
-//     "Quisque ornare vestibulum quam",
-//     "Donec ac eros lacinia ligula",
-//     "Nam malesuada tempor metus",
-//     "Ut laoreet ipsum massa",
-//     "Nunc blandit sem venenatis",
-//     "Maecenas dapibus ex accumsan",
-//   ],
-//   instructions: [
-//     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-//     "Ut elit tellus, luctus nec ullamcorper mattis.",
-//     "Ut elit tellus, luctus nec ullamcorper mattis.",
-//     "Ut elit tellus, luctus nec ullamcorper mattis.",
-//     "Ut elit tellus, luctus nec ullamcorper mattis.",
-//     "Ut elit tellus, luctus nec ullamcorper mattis.",
-//     "Ut elit tellus, luctus nec ullamcorper mattis.",
-//     "Ut elit tellus, luctus nec ullamcorper mattis.",
-//   ],
-//   nutritions: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam erat volutpat. Nunc posuere."
-// }
+import {
+  createBookmark,
+  deleteBookmark,
+  createRating,
+  deleteRating,
+} from "../../services/userService";
+import { useAuthStore } from "../../store/authStore";
 
 export default function RecipeDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [saved, setSaved] = useState(false);
+  const [userRating, setUserRating] = useState(null);
   const [recipe, setRecipe] = useState(null);
+
+  const markRecommendationDirty = useAuthStore((s) => s.markRecommendationDirty);
+
   useEffect(() => {
     fetchRecipe();
   }, [id]);
-  // const recipe = DUMMY_RECIPE
+
+  //kenapa useeffect diatas bergantung dengan id? ketika kita akses suatu detailpage dari sebuah resep, id resep diambil saat fetchRecipe() berjalan di bagian getRecipeByIdWithInteraction(id);
+  //setelah di ambil, seharusnya tidak lagi berubah-ubah atau dijalan ulang
+
   async function fetchRecipe() {
     try {
-      const data = await getRecipeById(id);
-
-      console.log(data);
+      const data = await getRecipeByIdWithInteraction(id);
 
       setRecipe(data);
+
+      setSaved(data.isBookmarked || false); // setSaved simpan state bookmarked atau tidak dari payload data isBookmarked yang kita ambil dari backend.  knp || false? padahal isBookmarked menyipampan true/false.
+
+      // setBookmarkId(data.bookmarkId || null);
+
+      setUserRating(data.userRating || null); // hampir sama dengan setSaved knp || null?
     } catch (err) {
       console.log(err);
     }
   }
 
-  const handleSave = () => {
-    setSaved(!saved);
-    // TODO: bookmarkService.toggle(id, !saved)
+  const handleSave = async () => {
+    try {
+      if (saved) {
+        await deleteBookmark(Number(id));
+
+        setSaved(false);
+        markRecommendationDirty();
+      } else {
+        await createBookmark(Number(id));
+
+        setSaved(true);
+        markRecommendationDirty();
+      }
+      // seharusnya disini markRecommendationDirty?
+    } catch (err) {
+      console.log(err);
+
+      alert(err.response?.data?.message || "Failed to update bookmark");
+    }
+  };
+
+  const handleRate = async (score) => {
+    try {
+      await createRating({
+        recipeId: Number(id),
+        score,
+      });
+
+      setUserRating(score);
+      markRecommendationDirty();
+      // seharusnya disini markRecommendationDirty?
+    } catch (err) {
+      console.log(err);
+
+      alert(err.response?.data?.message || "Failed to rate recipe");
+    }
+  };
+
+  const handleUndoRating = async () => {
+    try {
+      await deleteRating(Number(id));
+
+      setUserRating(null);
+      markRecommendationDirty();
+      // seharusnya disini markRecommendationDirty?
+    } catch (err) {
+      console.log(err);
+
+      alert("Failed to remove rating");
+    }
   };
   if (!recipe) {
     return (
@@ -138,13 +175,19 @@ export default function RecipeDetailPage() {
 
             <div className="mb-4">
               <RatingStars
-                avgRating="5"
-                totalRatings="5"
-                onRate={(star) => {
-                  // TODO: recipeService.rateRecipe(id, star)
-                  console.log("Rated:", star);
-                }}
+                avgRating={recipe.averageRating || 0}
+                totalRatings={recipe.totalRatings || 0}
+                userRating={userRating}
+                onRate={handleRate}
               />
+              {userRating && (
+                <button
+                  onClick={handleUndoRating}
+                  className="text-sm text-red-500 hover:text-red-700"
+                >
+                  Remove Rating
+                </button>
+              )}
             </div>
 
             <button

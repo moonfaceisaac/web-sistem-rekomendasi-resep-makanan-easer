@@ -46,7 +46,41 @@ export async function createBookmark(recipeId) {
   const response = await api.post("/user/bookmarks", {
     recipeId,
   });
-  markRecommendationDirty();
+  useAuthStore.getState().markRecommendationDirty();
 
+  return response.data;
+}
+
+export async function deleteBookmark(recipeId) {
+  const response = await api.delete("/user/bookmarks", {
+    data: {
+      recipeId,
+    },
+  });
+  useAuthStore.getState().markRecommendationDirty();
+
+  return response.data;
+}
+
+export async function createRating({ recipeId, score }) {
+  const response = await api.post("/user/rating", { recipeId, score });
+  useAuthStore.getState().markRecommendationDirty();
+
+  return response.data;
+}
+
+export async function deleteRating(recipeId) {
+  const response = await api.delete("/user/rating/", {
+    data: {
+      recipeId,
+    },
+  });
+  useAuthStore.getState().markRecommendationDirty();
+
+  return response.data;
+}
+
+export async function getBookmarkStatus(recipeId) {
+  const response = await api.get(`/user/bookmark/${recipeId}`);
   return response.data;
 }

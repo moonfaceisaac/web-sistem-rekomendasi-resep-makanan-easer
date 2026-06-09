@@ -1,5 +1,14 @@
 
-import { searchRecipes, getAllRecipes, getRecipeById, findAllRecipes, getRandomRecipes } from "../services/recipeService.js";
+import { 
+  searchRecipes, 
+  getAllRecipes,
+  getRecipeById,
+  findAllRecipes,
+  getRandomRecipes,
+  getAllRecipesWithInteraction,
+  getRecipeByIdWithInteraction,
+  searchRecipesWithInteraction
+} from "../services/recipeService.js";
 
 export const getRecipes = async (req, res) => {
   try {
@@ -110,6 +119,82 @@ export async function handleGetRandomRecipes(req, res) {
 
     return res.status(500).json({
       message: "Internal Server Error",
+    });
+  }
+}
+
+export async function handleGetRecipesWithInteraction(req, res) {
+  try {
+    const page = Number(req.query.page) || 1;
+
+    const limit = Number(req.query.limit) || 20;
+    
+    const userId = req.user.id;
+
+    const result = await getAllRecipesWithInteraction(userId, page, limit);
+    
+    
+
+    return res.status(200).json(result);
+  } catch (err) {
+    console.log(err);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}
+
+export async function handleSearchRecipesWithInteraction(req, res) {
+  try {
+    const keyword = req.query.keyword || "";
+
+    const page = Number(req.query.page) || 1;
+
+    const limit = Number(req.query.limit) || 20;
+
+    const userId = Number(req.user.id);
+
+    const result = await searchRecipesWithInteraction(
+      userId,
+      keyword,
+      page,
+      limit
+    );
+
+    return res.status(200).json(result);
+
+  } catch (err) {
+
+    console.log(err);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+
+  }
+}
+
+export async function handleGetRecipeByIdWithInteraction(req, res) {
+  try {
+    const { recipeId } = req.params;
+
+    const userId = req.user.id;
+
+    const recipe = await getRecipeByIdWithInteraction(userId, recipeId);
+
+    if (!recipe) {
+      return res.status(404).json({
+        message: "Recipe not found",
+      });
+    }
+
+    return res.status(200).json(recipe);
+  } catch (err) {
+    console.log(err);
+
+    return res.status(500).json({
+      message: "Internal server error",
     });
   }
 }

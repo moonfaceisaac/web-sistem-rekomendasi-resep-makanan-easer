@@ -4,7 +4,10 @@ import {
   getBookmarks,
   editUserById,
   getInteractionStatus,
-  createBookmark
+  createBookmark,
+  deleteBookmark,
+  createRating,
+  deleteRating
 } from "../services/userService.js";
 
 export async function handleGetProfile(req, res) {
@@ -112,6 +115,60 @@ export async function handleCreateBookmark(req, res) {
     return res.status(201).json({
       message: "Recipe bookmarked successfully",
       bookmark,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+}
+export async function handleDeleteBookmark(req, res) {
+  try {
+    const userId = req.user.id;
+    const { recipeId } = req.body;
+
+    const bookmark = await deleteBookmark(userId, recipeId);
+
+    return res.status(201).json({
+      message: "Recipe deleted successfully",
+      bookmark,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+}
+
+export async function handleCreateRating(req, res) {
+  try {
+    const userId = req.user.id;
+    const { recipeId, score } = req.body;
+    // const score = req.body.score
+
+    const rating = await createRating(userId, recipeId, score);
+
+    return res.status(201).json({
+      message: "Recipe Rated successfully",
+      rating,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+}
+
+export async function handleDeleteRating(req, res) {
+  try {
+    const userId = req.user.id;
+    const { recipeId } = req.body;
+
+    const rating = await deleteRating(userId, recipeId);
+
+    return res.status(201).json({
+      message: "Recipe deleted successfully",
+      rating,
     });
   } catch (err) {
     return res.status(400).json({

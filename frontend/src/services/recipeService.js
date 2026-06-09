@@ -32,3 +32,24 @@ export async function getRandomRecipes() {
 
   return response.data;
 }
+//---
+
+export async function getRecipeByIdWithInteraction(id) {
+  const res = await api.get(`/recipes/interaction/${id}`);
+
+  return res.data;
+}
+
+// export async function getRecipesAll(page = 1, limit = 6) {
+//   const response = await api.get(`/recipes/all?page=${page}&limit=20`);
+
+//   return response.data;
+// }
+
+export async function searchRecipesWithInteraction(keyword, page = 1, limit = 6) {
+  const response = await api.get(
+    `/recipes/search?keyword=${keyword}&page=${page}&limit=${limit}`,
+  );
+
+  return response.data;
+}
