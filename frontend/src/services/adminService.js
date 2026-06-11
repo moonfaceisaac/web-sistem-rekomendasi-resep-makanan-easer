@@ -23,6 +23,12 @@ export async function updateRecipe(recipeId, data) {
   return response.data;
 }
 
+export async function deleteRecipe(recipeId) {
+  const response = await api.delete(`/admin/recipes/${recipeId}`);
+
+  return response.data;
+}
+
 export async function getRecipeDetail(recipeId) {
   const response = await api.get(`/admin/recipesdetail/${recipeId}`);
 

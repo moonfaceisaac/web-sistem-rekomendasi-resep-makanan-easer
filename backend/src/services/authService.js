@@ -63,6 +63,7 @@ export async function loginService({ username, password }) {
 
   return {
     token,
+    username: account.username,
     id: account.user_id ?? account.admin_id,
     accountType: type,
   };

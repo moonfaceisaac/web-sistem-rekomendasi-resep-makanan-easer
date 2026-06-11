@@ -1,9 +1,9 @@
-import { data } from "react-router-dom";
+// import { data } from "react-router-dom";
 import api from "./api";
 
 export async function getRecipes() {
   const res = await api.get("/recipes");
-  console.log(data);
+  // console.log(data);
   return res.data;
 }
 

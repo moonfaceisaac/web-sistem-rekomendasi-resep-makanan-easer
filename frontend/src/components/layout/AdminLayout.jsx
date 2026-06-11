@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { NavLink, useNavigate } from "react-router-dom"
+import { useAuthStore } from "../../store/authStore"
 
 const menu = [
   {
@@ -19,6 +20,7 @@ const menu = [
 ]
 
 export default function AdminLayout({ children }) {
+  const { logout } = useAuthStore()
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef(null)
   const navigate = useNavigate()
@@ -86,7 +88,7 @@ export default function AdminLayout({ children }) {
             {open && (
               <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
                 <button
-                  onClick={() => { setOpen(false); navigate("/login") }}
+                  onClick={() => { setOpen(false); logout(); navigate("/logout") }}
                   className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition"
                 >
                   Sign Out

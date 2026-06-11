@@ -4,6 +4,7 @@ import {
   getRecipeAdminDetail,
   editRecipesAdmin,
   addRecipeAdmin,
+  deleteRecipeAdmin
 } from "../services/adminService.js";
 
 export async function handleGetUsers(req, res) {
@@ -116,6 +117,23 @@ export async function handleAddRecipe(req, res) {
 
     return res.status(201).json(data);
 
+  } catch (err) {
+    console.log(err);
+
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+export async function handleDeleteRecipe(req, res) {
+  try {
+    const recipeId = req.params.id;
+
+    await deleteRecipeAdmin(recipeId);
+
+    return res.status(200).json({
+      message: "Recipe deleted successfully",
+    });
   } catch (err) {
     console.log(err);
 

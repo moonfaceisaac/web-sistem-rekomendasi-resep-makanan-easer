@@ -127,3 +127,11 @@ export async function addRecipeAdmin(data){
     }
   })
 }
+
+export async function deleteRecipeAdmin(recipeId) {
+  return await prisma.recipe.delete({
+    where: {
+      recipe_id: Number(recipeId),
+    },
+  });
+}

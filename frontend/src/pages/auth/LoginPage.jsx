@@ -41,9 +41,11 @@ export default function LoginPage() {
 
       setAuth(
         res.token,
+        res.username,
         res.accountType,
         res.id
       )
+      console.log(useAuthStore.getState());
 
       if (res.accountType === "ADMIN") {
         navigate("/admin");
@@ -58,6 +60,9 @@ export default function LoginPage() {
         }
       }
     } catch (err) {
+      console.log(err);
+      console.log(err.response);
+      console.log(err.response?.data);
       alert(err.response?.data?.message || "Login failed");
     }
   };

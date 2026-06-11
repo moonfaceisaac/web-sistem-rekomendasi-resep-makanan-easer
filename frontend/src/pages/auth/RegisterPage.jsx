@@ -206,7 +206,7 @@ export default function RegisterPage() {
 
       alert("Register success");
 
-      navigate("/login");
+      navigate("/logout");
     } catch (err) {
       alert(err.response?.data?.message || "Register failed");
     }
@@ -294,7 +294,7 @@ export default function RegisterPage() {
       <p className="text-center text-sm text-gray-500 mt-4">
         Already have an account?
         <Link
-          to="/login"
+          to="/logout"
           className="font-semibold text-gray-900 hover:underline"
         >
           Sign-In

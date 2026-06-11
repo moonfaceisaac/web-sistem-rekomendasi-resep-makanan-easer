@@ -129,7 +129,7 @@ export async function handleGetRecipesWithInteraction(req, res) {
 
     const limit = Number(req.query.limit) || 20;
     
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
 
     const result = await getAllRecipesWithInteraction(userId, page, limit);
     
@@ -179,7 +179,7 @@ export async function handleGetRecipeByIdWithInteraction(req, res) {
   try {
     const { recipeId } = req.params;
 
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
 
     const recipe = await getRecipeByIdWithInteraction(userId, recipeId);
 

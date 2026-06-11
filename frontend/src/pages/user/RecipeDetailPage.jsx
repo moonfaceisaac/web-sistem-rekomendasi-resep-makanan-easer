@@ -20,7 +20,9 @@ export default function RecipeDetailPage() {
   const [userRating, setUserRating] = useState(null);
   const [recipe, setRecipe] = useState(null);
 
-  const markRecommendationDirty = useAuthStore((s) => s.markRecommendationDirty);
+  const markRecommendationDirty = useAuthStore(
+    (s) => s.markRecommendationDirty,
+  );
 
   useEffect(() => {
     fetchRecipe();
@@ -236,11 +238,24 @@ export default function RecipeDetailPage() {
                   {step}
                 </li>
               ))} */}
-              {recipe.cookingDirections.directions
+              {/* {recipe.cookingDirections.directions
                 .split("\n")
                 .map((line, i) => (
                   <p key={i}>{line}</p>
-                ))}
+                ))}*/}
+              {Array.isArray(recipe.cookingDirections?.steps)
+                ? recipe.cookingDirections.steps.map((step, i) => (
+                    <li key={i} className="text-sm text-gray-600">
+                      {step}
+                    </li>
+                  ))
+                : recipe.cookingDirections?.directions
+                    ?.split("\n")
+                    .map((line, i) => (
+                      <li key={i} className="text-sm text-gray-600">
+                        {line}
+                      </li>
+                    ))}
             </ol>
           </div>
         </div>
@@ -249,14 +264,20 @@ export default function RecipeDetailPage() {
           <h2 className="font-bold text-base mb-3">NUTRITIONS :</h2>
           <p className="text-sm text-gray-600">
             <ul className="space-y-1">
-              <li>Calories: {recipe.nutritions.calories.displayValue} kcal</li>
+              <li>Calories: {
+                recipe.nutritions.calories.displayValue ??
+                 recipe.nutritions.calories.amount
+              } kcal</li>
 
-              <li>Protein: {recipe.nutritions.protein.displayValue} g</li>
+              <li>Protein: {recipe.nutritions.protein.displayValue ??
+               recipe.nutritions.protein.amount} g</li>
 
-              <li>Fat: {recipe.nutritions.fat.displayValue} g</li>
+              <li>Fat: {recipe.nutritions.fat.displayValue ??
+               recipe.nutritions.fat.amount} g</li>
 
               <li>
-                Carbohydrates: {recipe.nutritions.carbohydrates.displayValue} g
+                Carbohydrates: {recipe.nutritions.carbohydrates.displayValue ??
+                recipe.nutritions.carbohydrates.amount} g
               </li>
             </ul>
           </p>

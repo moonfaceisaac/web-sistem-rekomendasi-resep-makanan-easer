@@ -49,7 +49,7 @@ export async function handleEditProfile(req, res) {
 
 export async function handleGetBookmarks(req, res) {
   try {
-    const userId = req.user.user_id;
+    const userId = Number(req.user.id);
 
     const keyword = req.query.keyword || "";
 
@@ -71,7 +71,7 @@ export async function handleGetBookmarks(req, res) {
 
 export async function handleGetRatings(req, res) {
   try {
-    const userId = req.user.user_id;
+    const userId = Number(req.user.id);
 
     const keyword = req.query.keyword || "";
 
@@ -107,7 +107,7 @@ export async function handleInteractionStatus(req, res) {
 
 export async function handleCreateBookmark(req, res) {
   try {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const { recipeId } = req.body;
 
     const bookmark = await createBookmark(userId, recipeId);
@@ -124,7 +124,7 @@ export async function handleCreateBookmark(req, res) {
 }
 export async function handleDeleteBookmark(req, res) {
   try {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const { recipeId } = req.body;
 
     const bookmark = await deleteBookmark(userId, recipeId);
@@ -142,7 +142,7 @@ export async function handleDeleteBookmark(req, res) {
 
 export async function handleCreateRating(req, res) {
   try {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const { recipeId, score } = req.body;
     // const score = req.body.score
 
@@ -161,7 +161,7 @@ export async function handleCreateRating(req, res) {
 
 export async function handleDeleteRating(req, res) {
   try {
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
     const { recipeId } = req.body;
 
     const rating = await deleteRating(userId, recipeId);

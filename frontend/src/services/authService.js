@@ -1,10 +1,7 @@
-import axios from "axios";
-
-const API = "http://localhost:5000";
-
+import api from "./api";
 export async function register(data) {
-  const res = await axios.post(
-    `${API}/auth/register`,
+  const res = await api.post(
+    "/auth/register",
 
     data,
   );
@@ -13,8 +10,8 @@ export async function register(data) {
 }
 
 export async function login(data) {
-  const res = await axios.post(
-    `${API}/auth/login`,
+  const res = await api.post(
+   "/auth/login",
 
     data,
   );

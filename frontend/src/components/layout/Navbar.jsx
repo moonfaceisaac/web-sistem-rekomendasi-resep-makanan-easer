@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
-export default function Navbar() {
+
+export default function Navbar({ username }) {
   const logout = useAuthStore((s)=> s.logout)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
@@ -74,7 +75,7 @@ export default function Navbar() {
               <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center shrink-0">
                 <span className="text-gray-600 text-xs font-semibold">U</span>
               </div>
-              <span className="text-sm font-medium text-gray-700 hidden sm:block">Username</span>
+              <span className="text-sm font-medium text-gray-700 hidden sm:block">{username}</span>
               <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -99,7 +100,7 @@ export default function Navbar() {
                 )}
                 <hr className="border-gray-100" />
                 <button
-                  onClick={() => { setOpen(false); logout(); navigate("/login") }}
+                  onClick={() => { setOpen(false); logout(); navigate("/logout") }}
                   className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition"
                 >
                   Sign Out

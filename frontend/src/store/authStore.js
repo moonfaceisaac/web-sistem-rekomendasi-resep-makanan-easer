@@ -18,6 +18,7 @@ export const useAuthStore = create(
   persist(
     (set) => ({
       token: null,
+      username: null,
       accountType: null,
       user_id: null,
       hasInteraction: false,
@@ -35,9 +36,16 @@ export const useAuthStore = create(
           recommendationDirty: true,
         }),
 
-      setAuth: (token, user) =>
+      // setAuth: (token, user) =>
+      //   set({
+      //     token,
+      //     accountType: user.accountType,
+      //     user_id: user.user_id,
+      //   }),
+      setAuth: (token, username, accountType, user_id) =>
         set({
           token,
+          username,
           accountType,
           user_id,
         }),
@@ -47,6 +55,7 @@ export const useAuthStore = create(
       logout: () =>
         set({
           token: null,
+          username: null,
           accountType: null,
           user_id: null,
           hasInteraction: false,

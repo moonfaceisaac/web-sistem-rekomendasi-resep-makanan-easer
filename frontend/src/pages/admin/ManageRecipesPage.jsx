@@ -7,18 +7,13 @@ import {
   updateRecipe,
   getRecipeDetail,
   createRecipe,
+  deleteRecipe,
 } from "../../services/adminService";
 import Pagination from "../../components/common/Pagination";
 import DynamicListInput from "../../components/common/DynamicListInput";
 
 function RecipeFormModal({ initial, onSave, onClose }) {
   const [form, setForm] = useState(
-    // initial || {
-    //   title: "",
-    //   ingredients: [""],
-    //   nutritions: "{}",
-    //   instructions: [""],
-    //   image: null,
     initial || {
       title: "",
       ingredients: [""],
@@ -53,31 +48,7 @@ function RecipeFormModal({ initial, onSave, onClose }) {
     e.preventDefault();
     onSave(form);
   };
-  // const payload = {
-  //   title: form.title,
 
-  //   // ingredients: form.ingredients.split("\n").filter(Boolean),
-  //   ingredients: form.ingredients.filter(Boolean),
-
-  //   nutritions: {
-  //     raw: form.nutritions,
-  //   },
-
-  //   cookingDirections: {
-  //     directions: form.instructions,
-  //   },
-  // };
-  // const payload = {
-  //   title: form.title,
-
-  //   ingredients: form.ingredients.filter(Boolean),
-
-  //   nutritions: JSON.parse(form.nutritions),
-
-  //   cookingDirections: {
-  //     steps: form.instructions.filter(Boolean),
-  //   },
-  // };
   return (
     <div
       className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
@@ -108,17 +79,6 @@ function RecipeFormModal({ initial, onSave, onClose }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              {/* <label className="text-xs text-gray-500 mb-1 block">
-                Ingredients
-              </label>
-              <textarea
-                name="ingredients"
-                value={form.ingredients}
-                onChange={handleChange}
-                placeholder="Ingredients"
-                rows={3}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none"
-              /> */}
               <DynamicListInput
                 label="Ingredients"
                 items={form.ingredients}
@@ -136,7 +96,9 @@ function RecipeFormModal({ initial, onSave, onClose }) {
                 Nutritions
               </label>
               <div className="grid grid-cols-2 gap-3">
-                <label className="text-xs text-gray-500 mb-1 block">calories</label>
+                <label className="text-xs text-gray-500 mb-1 block">
+                  calories
+                </label>
                 <input
                   type="number"
                   placeholder="Calories"
@@ -149,7 +111,9 @@ function RecipeFormModal({ initial, onSave, onClose }) {
                     })
                   }
                 />
-                <label className="text-xs text-gray-500 mb-1 block">protein</label>
+                <label className="text-xs text-gray-500 mb-1 block">
+                  protein
+                </label>
                 <input
                   type="number"
                   placeholder="Protein (g)"
@@ -271,7 +235,7 @@ export default function ManageRecipesPage() {
 
   async function fetchRecipesDetail() {
     try {
-      const data = await getRecipesDetail();
+      const data = await getRecipeDetail();
       setRecipes(data.recipes);
     } catch (err) {
       console.log(err);
@@ -286,55 +250,13 @@ export default function ManageRecipesPage() {
     return () => clearTimeout(timeout);
   }, [query, currentPage]);
 
-  // const handleEdit = async (recipeId) => {
-  //   try {
-  //     const data = await getRecipeDetail(recipeId);
-  //     console.log(data);
-  //     setModal({
-  //       mode: "edit",
-  //       recipe: {
-  //         recipe_id: data.recipe.recipe_id,
-  //         title: data.recipe.title || "",
-  //         ingredients: JSON.stringify(data.recipe.ingredients, null, 2),
-  //         nutritions: JSON.stringify(data.recipe.nutritions, null, 2),
-  //         instructions: JSON.stringify(data.recipe.cookingDirections, null, 2),
-  //         image: data.recipe.imageUrl || null,
-  //       },
-  //     });
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
-  // const handleSave = async (form) => {
-  //   try {
-  //     if (modal.mode === "add") {
-  //       await createRecipe(payload);
-  //     }
-
-  //     if (modal.mode === "edit") {
-  //       await updateRecipe(modal.recipe.recipe_id, form);
-
-  //       await fetchRecipes();
-  //     }
-
-  //     setModal(null);
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
   const handleSave = async (form) => {
     try {
       const payload = {
         title: form.title,
 
-        // ingredients: form.ingredients
-        //   .split("\n")
-        //   .map((item) => item.trim())
-        //   .filter(Boolean),
-        // ingredients: form.ingredients.filter(Boolean),
         ingredients: form.ingredients.filter((item) => item.trim() !== ""),
 
-        // nutritions: form.nutritions ? JSON.parse(form.nutritions) : {},
         nutritions: {
           calories: {
             amount: Number(form.calories || 0),
@@ -396,19 +318,14 @@ export default function ManageRecipesPage() {
 
           title: data.recipe.title || "",
 
-          // ingredients: data.recipe.ingredients || [""],
           ingredients: Array.isArray(data.recipe.ingredients)
             ? data.recipe.ingredients
             : [""],
 
-          // instructions: data.recipe.cookingDirections?.steps || [
-          //   data.recipe.cookingDirections?.directions || "",
-          // ],
           instructions: Array.isArray(data.recipe.cookingDirections?.steps)
             ? data.recipe.cookingDirections.steps
             : [""],
 
-          // nutritions: JSON.stringify(data.recipe.nutritions || {}, null, 2),
           calories: data.recipe.nutritions?.calories?.amount || "",
 
           protein: data.recipe.nutritions?.protein?.amount || "",
@@ -425,10 +342,16 @@ export default function ManageRecipesPage() {
     }
   };
 
-  const handleConfirmDelete = () => {
-    setRecipes(recipes.filter((r) => r.id !== deleteTarget.id));
-    setDeleteTarget(null);
-    // TODO: recipeService.deleteRecipe(deleteTarget.id)
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteRecipe(deleteTarget.recipe_id);
+
+      setRecipes(recipes.filter((r) => r.recipe_id !== deleteTarget.recipe_id));
+
+      setDeleteTarget(null);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleSearchChange = (e) => {
@@ -438,11 +361,6 @@ export default function ManageRecipesPage() {
   return (
     <AdminLayout>
       {modal && (
-        // <RecipeFormModal
-        //   initial={modal.mode === "edit" ? modal.recipe : null}
-        //   onSave={handleSave}
-        //   onClose={() => setModal(null)}
-        // <RecipeFormModal initial={modal.recipe} />
         <RecipeFormModal
           initial={modal.recipe}
           onSave={handleSave}
@@ -483,33 +401,15 @@ export default function ManageRecipesPage() {
               type="text"
               placeholder="Find your Recipe"
               value={query}
-              // onChange={(e) => setQuery(e.target.value)}
               onChange={handleSearchChange}
               className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
             />
           </div>
           <button
-            // onClick={() => setModal({ mode: "add" })}
             onClick={() =>
-              // setModal({
-              //   mode: "add",
-              //   recipe: {
-              //     title: "",
-              //     ingredients: "",
-              //     nutritions: "{}",
-              //     instructions: "",
-              //     image: null,
-              //   },
-              // })
               setModal({
                 mode: "add",
-                // recipe: {
-                //   title: "",
-                //   ingredients: [""],
-                //   nutritions: "{}",
-                //   instructions: [""],
-                //   image: null,
-                // },
+
                 recipe: {
                   title: "",
                   ingredients: [""],
