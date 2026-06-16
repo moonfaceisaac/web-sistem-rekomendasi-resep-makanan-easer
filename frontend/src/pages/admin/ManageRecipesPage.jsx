@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import AdminLayout from "../../components/layout/AdminLayout";
 import ConfirmModal from "../../components/common/Modal";
 import { useEffect } from "react";
@@ -11,8 +11,11 @@ import {
 } from "../../services/adminService";
 import Pagination from "../../components/common/Pagination";
 import DynamicListInput from "../../components/common/DynamicListInput";
+import { useToast } from "../../hooks/useToast";
+import { getFriendlyApiError } from "../../utils/httpError";
+import { firstNonEmpty } from "../../utils/validation";
 
-function RecipeFormModal({ initial, onSave, onClose }) {
+function RecipeFormModal({ initial, onSave, onClose, submitting }) {
   const [form, setForm] = useState(
     initial || {
       title: "",
@@ -27,16 +30,15 @@ function RecipeFormModal({ initial, onSave, onClose }) {
       image: null,
     },
   );
-  useEffect(() => {
-    if (initial) {
-      setForm(initial);
-    }
-  }, [initial]);
+
   const fileInputRef = useRef(null);
   const isEdit = !!initial;
+  const [errors, setErrors] = useState({});
 
-  const handleChange = (e) =>
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -44,8 +46,32 @@ function RecipeFormModal({ initial, onSave, onClose }) {
     setForm({ ...form, image: URL.createObjectURL(file) });
   };
 
+  const validate = () => {
+    const nextErrors = {};
+
+    if (!form.title.trim()) {
+      nextErrors.title = "Recipe title is required.";
+    }
+
+    if (!firstNonEmpty(form.ingredients)) {
+      nextErrors.ingredients = "Please enter at least one ingredient.";
+    }
+
+    if (!firstNonEmpty(form.instructions)) {
+      nextErrors.instructions = "Please enter at least one instruction.";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!validate() || submitting) {
+      return;
+    }
+
     onSave(form);
   };
 
@@ -71,10 +97,12 @@ function RecipeFormModal({ initial, onSave, onClose }) {
               name="title"
               value={form.title}
               onChange={handleChange}
-              required
               placeholder="Recipe Title"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${errors.title ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-gray-400"}`}
             />
+            {errors.title && (
+              <p className="text-xs text-red-600 mt-1">{errors.title}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -89,6 +117,7 @@ function RecipeFormModal({ initial, onSave, onClose }) {
                   })
                 }
                 placeholder="Ingredient"
+                error={errors.ingredients}
               />
             </div>
             <div>
@@ -165,6 +194,7 @@ function RecipeFormModal({ initial, onSave, onClose }) {
                   })
                 }
                 placeholder="Step"
+                error={errors.instructions}
               />
             </div>
           </div>
@@ -203,9 +233,16 @@ function RecipeFormModal({ initial, onSave, onClose }) {
           <div className="flex justify-end mt-2">
             <button
               type="submit"
-              className="bg-gray-300 text-gray-600 text-sm px-6 py-2 rounded-lg hover:bg-gray-900 hover:text-white transition"
+              disabled={submitting}
+              className="bg-gray-300 text-gray-600 text-sm px-6 py-2 rounded-lg hover:bg-gray-900 hover:text-white transition disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isEdit ? "Save Changes" : "Create Recipe"}
+              {submitting
+                ? isEdit
+                  ? "Saving..."
+                  : "Creating..."
+                : isEdit
+                  ? "Save Changes"
+                  : "Create Recipe"}
             </button>
           </div>
         </form>
@@ -215,32 +252,26 @@ function RecipeFormModal({ initial, onSave, onClose }) {
 }
 
 export default function ManageRecipesPage() {
+  const toast = useToast();
   const [query, setQuery] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [modal, setModal] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [recipes, setRecipes] = useState([]);
+  const [savingRecipe, setSavingRecipe] = useState(false);
+  const [deletingRecipe, setDeletingRecipe] = useState(false);
 
-  async function fetchRecipes() {
+  const fetchRecipes = useCallback(async () => {
     try {
       const data = await getRecipes(query, currentPage, 10);
 
       setRecipes(data.recipes);
       setTotalPages(data.totalPages);
     } catch (err) {
-      console.log(err);
+      toast.error(getFriendlyApiError(err, "Failed to load recipes"));
     }
-  }
-
-  async function fetchRecipesDetail() {
-    try {
-      const data = await getRecipeDetail();
-      setRecipes(data.recipes);
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  }, [query, currentPage, toast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -248,9 +279,15 @@ export default function ManageRecipesPage() {
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [query, currentPage]);
+  }, [fetchRecipes]);
 
   const handleSave = async (form) => {
+    if (savingRecipe) {
+      return;
+    }
+
+    setSavingRecipe(true);
+
     try {
       const payload = {
         title: form.title,
@@ -279,12 +316,6 @@ export default function ManageRecipesPage() {
           },
         },
 
-        // cookingDirections: {
-        //   directions: form.instructions,
-        // },
-        // cookingDirections: {
-        //   steps: form.instructions.filter(Boolean),
-        // },
         cookingDirections: {
           steps: form.instructions.filter((item) => item.trim() !== ""),
         },
@@ -292,20 +323,21 @@ export default function ManageRecipesPage() {
 
       if (modal.mode === "add") {
         await createRecipe(payload);
+        toast.success("Recipe created successfully.");
       }
 
       if (modal.mode === "edit") {
         await updateRecipe(modal.recipe.recipe_id, payload);
-        console.log(form.instructions);
+        toast.success("Recipe updated successfully.");
       }
 
       await fetchRecipes();
 
       setModal(null);
     } catch (err) {
-      console.log(err);
-
-      alert("Invalid nutrition JSON. Check the Nutritions field.");
+      toast.error(getFriendlyApiError(err, "Failed to save recipe"));
+    } finally {
+      setSavingRecipe(false);
     }
   };
   // const handleEdit = async (recipeId) => {
@@ -396,19 +428,28 @@ export default function ManageRecipesPage() {
         },
       });
     } catch (err) {
-      console.log(err);
+      toast.error(getFriendlyApiError(err, "Failed to load recipe detail"));
     }
   };
 
   const handleConfirmDelete = async () => {
+    if (deletingRecipe) {
+      return;
+    }
+
+    setDeletingRecipe(true);
+
     try {
       await deleteRecipe(deleteTarget.recipe_id);
 
       setRecipes(recipes.filter((r) => r.recipe_id !== deleteTarget.recipe_id));
 
       setDeleteTarget(null);
+      toast.success("Recipe deleted successfully.");
     } catch (err) {
-      console.log(err);
+      toast.error(getFriendlyApiError(err, "Failed to delete recipe"));
+    } finally {
+      setDeletingRecipe(false);
     }
   };
 
@@ -423,6 +464,7 @@ export default function ManageRecipesPage() {
           initial={modal.recipe}
           onSave={handleSave}
           onClose={() => setModal(null)}
+          submitting={savingRecipe}
         />
       )}
 
@@ -482,7 +524,8 @@ export default function ManageRecipesPage() {
                 },
               })
             }
-            className="flex items-center gap-2 bg-gray-100 border border-gray-200 text-gray-700 text-sm px-4 py-2 rounded-lg hover:bg-gray-200 transition shrink-0"
+            disabled={savingRecipe || deletingRecipe}
+            className="flex items-center gap-2 bg-gray-100 border border-gray-200 text-gray-700 text-sm px-4 py-2 rounded-lg hover:bg-gray-200 transition shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <svg
               className="w-4 h-4"
@@ -521,13 +564,15 @@ export default function ManageRecipesPage() {
                   <div className="flex flex-col gap-1 items-center">
                     <button
                       onClick={() => handleEdit(recipe.recipe_id)}
-                      className="w-full bg-gray-900 text-white text-xs px-4 py-1.5 rounded-lg hover:bg-gray-700 transition"
+                      disabled={savingRecipe || deletingRecipe}
+                      className="w-full bg-gray-900 text-white text-xs px-4 py-1.5 rounded-lg hover:bg-gray-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => setDeleteTarget(recipe)}
-                      className="w-full bg-gray-900 text-white text-xs px-4 py-1.5 rounded-lg hover:bg-red-600 transition"
+                      disabled={savingRecipe || deletingRecipe}
+                      className="w-full bg-gray-900 text-white text-xs px-4 py-1.5 rounded-lg hover:bg-red-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>

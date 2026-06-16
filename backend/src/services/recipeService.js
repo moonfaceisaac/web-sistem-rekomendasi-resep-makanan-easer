@@ -142,6 +142,7 @@ export async function getRandomRecipes(limit = 20) {
     select: {
       recipe_id: true,
       title: true,
+      imageUrl: true,
     },
   });
 

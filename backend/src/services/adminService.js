@@ -1,5 +1,44 @@
 import { prisma } from "../config/prisma.js";
 
+function buildError(status, message, fieldErrors) {
+  const err = new Error(message);
+  err.status = status;
+  if (fieldErrors) {
+    err.fieldErrors = fieldErrors;
+  }
+  return err;
+}
+
+function hasNonEmptyItems(value) {
+  return (
+    Array.isArray(value) &&
+    value.some((item) => String(item || "").trim() !== "")
+  );
+}
+
+function validateRecipePayload(data) {
+  const fieldErrors = {};
+
+  if (!String(data.title || "").trim()) {
+    fieldErrors.title = "Recipe title is required";
+  }
+
+  if (!hasNonEmptyItems(data.ingredients)) {
+    fieldErrors.ingredients =
+      "Ingredients must contain at least one non-empty item";
+  }
+
+  const steps = data.cookingDirections?.steps;
+  if (!hasNonEmptyItems(steps)) {
+    fieldErrors.instructions =
+      "Instructions must contain at least one non-empty step";
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    throw buildError(400, "Invalid recipe payload", fieldErrors);
+  }
+}
+
 export async function getUsers(keyword = "", page = 1, limit = 10) {
   const skip = (page - 1) * limit;
 
@@ -91,9 +130,9 @@ export async function getRecipeAdminDetail(recipeId) {
       recipe_id: true,
       title: true,
       ingredients: true,
-      cookingDirections:true,
-      nutritions:true,
-      imageUrl:true
+      cookingDirections: true,
+      nutritions: true,
+      imageUrl: true,
     },
   });
 
@@ -103,6 +142,8 @@ export async function getRecipeAdminDetail(recipeId) {
 }
 
 export async function editRecipesAdmin(recipeId, data) {
+  validateRecipePayload(data);
+
   return await prisma.recipe.update({
     where: {
       recipe_id: Number(recipeId),
@@ -117,15 +158,17 @@ export async function editRecipesAdmin(recipeId, data) {
   });
 }
 
-export async function addRecipeAdmin(data){
+export async function addRecipeAdmin(data) {
+  validateRecipePayload(data);
+
   return await prisma.recipe.create({
-    data:{
-      title:data.title,
-      ingredients:data.ingredients,
-      nutritions:data.nutritions,
-      cookingDirections:data.cookingDirections,
-    }
-  })
+    data: {
+      title: data.title,
+      ingredients: data.ingredients,
+      nutritions: data.nutritions,
+      cookingDirections: data.cookingDirections,
+    },
+  });
 }
 
 export async function deleteRecipeAdmin(recipeId) {

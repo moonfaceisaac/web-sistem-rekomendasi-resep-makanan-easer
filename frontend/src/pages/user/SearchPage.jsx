@@ -51,7 +51,6 @@ export default function HomePage() {
         setLoadingRecommendations(true);
         const data = await getRecommendations();
         setRecommendations(data);
-        // console.log(recommendations);
       } catch (err) {
         console.log(err);
       } finally {

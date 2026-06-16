@@ -7,7 +7,7 @@ import {
   createBookmark,
   deleteBookmark,
   createRating,
-  deleteRating
+  deleteRating,
 } from "../services/userService.js";
 
 export async function handleGetProfile(req, res) {
@@ -41,8 +41,8 @@ export async function handleEditProfile(req, res) {
   } catch (err) {
     console.log(err);
 
-    return res.status(500).json({
-      message: "Internal server error",
+    return res.status(err.status || 500).json({
+      message: err.message || "Internal server error",
     });
   }
 }

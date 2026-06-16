@@ -3,20 +3,35 @@ import jwt from "jsonwebtoken";
 
 import { prisma } from "../config/prisma.js";
 
-export async function register(data) {
-  const res = await axios.post(
-    "http://localhost:5000/auth/register",
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
-    data,
-  );
-
-  return res.data;
+function buildError(status, message) {
+  const error = new Error(message);
+  error.status = status;
+  return error;
 }
 
 export async function loginService({ username, password }) {
+  const identifier = String(username || "").trim();
+  const normalizedPassword = String(password || "");
+
+  if (!identifier) {
+    throw buildError(400, "Username or email is required");
+  }
+
+  if (!normalizedPassword) {
+    throw buildError(400, "Password is required");
+  }
+
+  if (identifier.includes("@") && !isValidEmail(identifier)) {
+    throw buildError(400, "Invalid email format");
+  }
+
   let account = await prisma.user.findFirst({
     where: {
-      OR: [{ email: username }, { username }],
+      OR: [{ email: identifier }, { username: identifier }],
     },
   });
 
@@ -25,7 +40,7 @@ export async function loginService({ username, password }) {
   if (!account) {
     account = await prisma.admin.findFirst({
       where: {
-        OR: [{ email: username }, { username }],
+        OR: [{ email: identifier }, { username: identifier }],
       },
     });
 
@@ -33,29 +48,21 @@ export async function loginService({ username, password }) {
   }
 
   if (!account) {
-    throw Error("Invalid credentials");
+    throw buildError(404, "Username/email not found");
   }
 
-  const valid = await bcrypt.compare(
-    password,
-
-    account.password,
-  );
+  const valid = await bcrypt.compare(normalizedPassword, account.password);
 
   if (!valid) {
-    throw Error("Invalid credentials");
+    throw buildError(401, "Password incorrect");
   }
 
   const token = jwt.sign(
     {
       accountType: type,
-
       id: account.user_id ?? account.admin_id,
-
     },
-
     process.env.JWT_SECRET,
-
     {
       expiresIn: "7d",
     },

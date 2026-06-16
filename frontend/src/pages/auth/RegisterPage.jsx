@@ -1,154 +1,3 @@
-// import { useState } from "react";
-// import { Link, useNavigate } from "react-router-dom";
-// import AuthLayout from "../../components/layout/AuthLayout";
-// import Input from "../../components/common/Input";
-// import Button from "../../components/common/Button";
-// import { register } from "../../services/authService";
-
-// const INITIAL_FORM = {
-//   fullname: "",
-//   placeOfBirth: "",
-//   username: "",
-//   gender: "",
-//   email: "",
-//   password: "",
-//   dateOfBirth: "",
-//   confirmPassword: "",
-// };
-
-// // const submit = async (e) => {
-// //   e.preventDefault();
-
-// //   try {
-// //     await register({
-// //       namaLengkap,
-
-// //       username,
-
-// //       tanggalLahir,
-
-// //       tempatLahir,
-
-// //       jenisKelamin,
-
-// //       email,
-
-// //       password,
-
-// //       confirmPassword,
-// //     });
-
-// //     alert("Register success");
-
-// //     navigate("/login");
-// //   } catch (err) {
-// //     alert(err.response?.data?.message);
-// //   }
-// // };
-
-// export default function RegisterPage() {
-//   const [form, setForm] = useState(INITIAL_FORM);
-//   const navigate = useNavigate();
-
-//   const handleChange = (e) =>
-//     setForm({ ...form, [e.target.name]: e.target.value });
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     // TODO: authService.register(form)
-//     navigate("/login");
-//   };
-
-//   return (
-//     <AuthLayout title="Sign-Up" size="lg">
-//       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-//         <div className="grid grid-cols-2 gap-3">
-          // <Input
-          //   type="text"
-          //   name="fullname"
-          //   placeholder="Fullname"
-          //   value={form.fullname}
-          //   onChange={handleChange}
-          //   required
-          // />
-          // <Input
-          //   type="text"
-          //   name="placeOfBirth"
-          //   placeholder="Place of Birth"
-          //   value={form.placeOfBirth}
-          //   onChange={handleChange}
-          //   required
-          // />
-          // <Input
-          //   type="text"
-          //   name="username"
-          //   placeholder="Username"
-          //   value={form.username}
-          //   onChange={handleChange}
-          //   required
-          // />
-          // <select
-          //   name="gender"
-          //   value={form.gender}
-          //   onChange={handleChange}
-          //   required
-          //   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          // >
-          //   <option value="" disabled>
-          //     Gender
-          //   </option>
-          //   <option value="male">Male</option>
-          //   <option value="female">Female</option>
-          // </select>
-          // <Input
-          //   type="email"
-          //   name="email"
-          //   placeholder="E-Mail"
-          //   value={form.email}
-          //   onChange={handleChange}
-          //   required
-          // />
-          // <Input
-          //   type="password"
-          //   name="password"
-          //   placeholder="Password"
-          //   value={form.password}
-          //   onChange={handleChange}
-          //   required
-          // />
-          // <Input
-          //   type="date"
-          //   name="dateOfBirth"
-          //   value={form.dateOfBirth}
-          //   onChange={handleChange}
-          //   required
-          // />
-          // <Input
-          //   type="password"
-          //   name="confirmPassword"
-          //   placeholder="Confirm Password"
-          //   value={form.confirmPassword}
-          //   onChange={handleChange}
-          //   required
-          // />
-//         </div>
-//         <Button type="submit" className="mt-1" onSubmit={submit}>
-//           Sign-Up
-//         </Button>
-//       </form>
-//       <p className="text-center text-sm text-gray-500 mt-4">
-//         Already have an account?{" "}
-//         <Link
-//           to="/login"
-//           className="font-semibold text-gray-900 hover:underline"
-//         >
-//           Sign-In
-//         </Link>
-//       </p>
-//     </AuthLayout>
-//   );
-// }
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -157,6 +6,9 @@ import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 
 import { register } from "../../services/authService";
+import { useToast } from "../../hooks/useToast";
+import { getFriendlyApiError } from "../../utils/httpError";
+import { isValidEmail } from "../../utils/validation";
 
 const INITIAL_FORM = {
   fullname: "",
@@ -170,45 +22,98 @@ const INITIAL_FORM = {
 };
 
 export default function RegisterPage() {
+  const toast = useToast();
   const [form, setForm] = useState(INITIAL_FORM);
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
+    const { name, value } = e.target;
 
-      [e.target.name]: e.target.value,
-    });
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const validate = () => {
+    const nextErrors = {};
+
+    if (!form.fullname.trim()) nextErrors.fullname = "Fullname is required.";
+    if (!form.placeOfBirth.trim()) {
+      nextErrors.placeOfBirth = "Place of birth is required.";
+    }
+    if (!form.username.trim()) nextErrors.username = "Username is required.";
+    if (!form.gender) nextErrors.gender = "Gender is required.";
+    if (!form.email.trim()) {
+      nextErrors.email = "Email is required.";
+    } else if (!isValidEmail(form.email.trim())) {
+      nextErrors.email = "Please enter a valid email format.";
+    }
+    if (!form.password.trim()) nextErrors.password = "Password is required.";
+    if (!form.dateOfBirth)
+      nextErrors.dateOfBirth = "Date of birth is required.";
+    if (!form.confirmPassword.trim()) {
+      nextErrors.confirmPassword = "Confirm password is required.";
+    }
+
+    if (
+      form.password.trim() &&
+      form.confirmPassword.trim() &&
+      form.password !== form.confirmPassword
+    ) {
+      nextErrors.confirmPassword = "Password and confirm password must match.";
+    }
+
+    setErrors(nextErrors);
+
+    return Object.keys(nextErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!validate() || submitting) {
+      return;
+    }
+
+    setSubmitting(true);
+
     try {
       await register({
-        namaLengkap: form.fullname,
-
-        username: form.username,
-
+        namaLengkap: form.fullname.trim(),
+        username: form.username.trim(),
         tanggalLahir: form.dateOfBirth,
-
-        tempatLahir: form.placeOfBirth,
-
+        tempatLahir: form.placeOfBirth.trim(),
         jenisKelamin: form.gender.toUpperCase(),
-
-        email: form.email,
-
+        email: form.email.trim(),
         password: form.password,
-
         confirmPassword: form.confirmPassword,
       });
 
-      alert("Register success");
-
-      navigate("/logout");
+      toast.success("Registration successful. Please sign in.");
+      navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Register failed");
+      const message = err.response?.data?.message || "";
+      const lowered = message.toLowerCase();
+
+      if (lowered.includes("username")) {
+        setErrors((prev) => ({ ...prev, username: message }));
+      }
+      if (lowered.includes("email")) {
+        setErrors((prev) => ({ ...prev, email: message }));
+      }
+      if (lowered.includes("password") && lowered.includes("match")) {
+        setErrors((prev) => ({ ...prev, confirmPassword: message }));
+      }
+
+      toast.error(getFriendlyApiError(err, "Register failed"));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -216,13 +121,14 @@ export default function RegisterPage() {
     <AuthLayout title="Sign-Up" size="lg">
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-3">
-                    <Input
+          <Input
             type="text"
             name="fullname"
             placeholder="Fullname"
             value={form.fullname}
             onChange={handleChange}
-            required
+            error={errors.fullname}
+            disabled={submitting}
           />
           <Input
             type="text"
@@ -230,7 +136,8 @@ export default function RegisterPage() {
             placeholder="Place of Birth"
             value={form.placeOfBirth}
             onChange={handleChange}
-            required
+            error={errors.placeOfBirth}
+            disabled={submitting}
           />
           <Input
             type="text"
@@ -238,28 +145,35 @@ export default function RegisterPage() {
             placeholder="Username"
             value={form.username}
             onChange={handleChange}
-            required
+            error={errors.username}
+            disabled={submitting}
           />
-          <select
-            name="gender"
-            value={form.gender}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          >
-            <option value="" disabled>
-              Gender
-            </option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
+          <div>
+            <select
+              name="gender"
+              value={form.gender}
+              onChange={handleChange}
+              disabled={submitting}
+              className={`w-full border rounded-lg px-4 py-2.5 text-sm text-gray-500 focus:outline-none focus:ring-2 ${errors.gender ? "border-red-400 focus:ring-red-300" : "border-gray-300 focus:ring-gray-400"}`}
+            >
+              <option value="" disabled>
+                Gender
+              </option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+            {errors.gender && (
+              <p className="text-xs text-red-600 mt-1">{errors.gender}</p>
+            )}
+          </div>
           <Input
             type="email"
             name="email"
             placeholder="E-Mail"
             value={form.email}
             onChange={handleChange}
-            required
+            error={errors.email}
+            disabled={submitting}
           />
           <Input
             type="password"
@@ -267,14 +181,16 @@ export default function RegisterPage() {
             placeholder="Password"
             value={form.password}
             onChange={handleChange}
-            required
+            error={errors.password}
+            disabled={submitting}
           />
           <Input
             type="date"
             name="dateOfBirth"
             value={form.dateOfBirth}
             onChange={handleChange}
-            required
+            error={errors.dateOfBirth}
+            disabled={submitting}
           />
           <Input
             type="password"
@@ -282,11 +198,12 @@ export default function RegisterPage() {
             placeholder="Confirm Password"
             value={form.confirmPassword}
             onChange={handleChange}
-            required
+            error={errors.confirmPassword}
+            disabled={submitting}
           />
         </div>
 
-        <Button type="submit" className="mt-1">
+        <Button type="submit" className="mt-1" loading={submitting}>
           Sign-Up
         </Button>
       </form>
@@ -294,7 +211,7 @@ export default function RegisterPage() {
       <p className="text-center text-sm text-gray-500 mt-4">
         Already have an account?
         <Link
-          to="/logout"
+          to="/login"
           className="font-semibold text-gray-900 hover:underline"
         >
           Sign-In

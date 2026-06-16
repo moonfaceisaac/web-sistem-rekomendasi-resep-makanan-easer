@@ -4,6 +4,16 @@ import {
   recipeInteractionSelect,
 } from "../helpers/recipeHelper.js";
 
+function buildError(status, message) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export async function getUserById(userId) {
   const user = await prisma.user.findUnique({
     where: {
@@ -25,19 +35,59 @@ export async function getUserById(userId) {
 }
 
 export async function editUserById(userId, data) {
-  console.log("USER ID:", userId);
-  console.log("DATA:", data);
+  const payload = data.payload || {};
+  const username = String(payload.username || "").trim();
+  const email = String(payload.email || "").trim();
+
+  if (!username) {
+    throw buildError(400, "Username is required");
+  }
+
+  if (!email) {
+    throw buildError(400, "Email is required");
+  }
+
+  if (!isValidEmail(email)) {
+    throw buildError(400, "Invalid email format");
+  }
+
+  const existingUsername = await prisma.user.findFirst({
+    where: {
+      username,
+      NOT: {
+        user_id: Number(userId),
+      },
+    },
+  });
+
+  if (existingUsername) {
+    throw buildError(409, "Username already exists");
+  }
+
+  const existingEmail = await prisma.user.findFirst({
+    where: {
+      email,
+      NOT: {
+        user_id: Number(userId),
+      },
+    },
+  });
+
+  if (existingEmail) {
+    throw buildError(409, "Email already exists");
+  }
+
   return await prisma.user.update({
     where: {
       user_id: Number(userId),
     },
     data: {
-      namaLengkap: data.payload.namaLengkap,
-      tanggalLahir: new Date(data.payload.tanggalLahir),
-      username: data.payload.username,
-      tempatLahir: data.payload.tempatLahir,
-      jenisKelamin: data.payload.jenisKelamin,
-      email: data.payload.email,
+      namaLengkap: payload.namaLengkap,
+      tanggalLahir: new Date(payload.tanggalLahir),
+      username,
+      tempatLahir: payload.tempatLahir,
+      jenisKelamin: payload.jenisKelamin,
+      email,
     },
   });
 }

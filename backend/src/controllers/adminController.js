@@ -4,7 +4,7 @@ import {
   getRecipeAdminDetail,
   editRecipesAdmin,
   addRecipeAdmin,
-  deleteRecipeAdmin
+  deleteRecipeAdmin,
 } from "../services/adminService.js";
 
 export async function handleGetUsers(req, res) {
@@ -85,46 +85,28 @@ export async function handleUpdateRecipe(req, res) {
   } catch (err) {
     console.log(err);
 
-    return res.status(500).json({
-      message: "Internal server error",
+    return res.status(err.status || 500).json({
+      message: err.message || "Internal server error",
+      fieldErrors: err.fieldErrors,
     });
   }
 }
-
-// export async function handleAddRecipe(req, res) {
-//   const data = await addRecipeAdmin(req.body);
-//   try {
-//     if (!data) {
-//       return res.status(404).json({
-//         message: "data invalid",
-//       });
-//       return res.status(200).json(result);
-//     }
-//   } catch (err) {
-//     console.log(err);
-
-//     return res.status(500).json({
-//       message: "Internal Server Error",
-//     });
-//   }
-// }
 
 export async function handleAddRecipe(req, res) {
   try {
-    console.log(req.body);
-
     const data = await addRecipeAdmin(req.body);
 
     return res.status(201).json(data);
-
   } catch (err) {
     console.log(err);
 
-    return res.status(500).json({
-      message: "Internal Server Error",
+    return res.status(err.status || 500).json({
+      message: err.message || "Internal Server Error",
+      fieldErrors: err.fieldErrors,
     });
   }
 }
+
 export async function handleDeleteRecipe(req, res) {
   try {
     const recipeId = req.params.id;

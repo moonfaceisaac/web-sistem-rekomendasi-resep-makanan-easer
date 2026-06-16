@@ -3,6 +3,9 @@ import UserLayout from "../../components/layout/UserLayout";
 import ProfileLayout from "../../components/layout/ProfileLayout";
 // import { useState, useRef, useEffect } from "react";
 import { getUserProfile, editUserProfile } from "../../services/userService";
+import { useToast } from "../../hooks/useToast";
+import { getFriendlyApiError } from "../../utils/httpError";
+import { isValidEmail } from "../../utils/validation";
 
 // const DUMMY_USER = {
 //   fullname: "",
@@ -67,12 +70,18 @@ export default function ProfilePage() {
   // const [savedForm, setSavedForm] = useState(DUMMY_USER)
   const [form, setForm] = useState(EMPTY_USER);
   const [savedForm, setSavedForm] = useState(EMPTY_USER);
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
   const fileInputRef = useRef(null);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
 
   const handleEdit = () => {
     setSavedForm(form);
@@ -90,17 +99,40 @@ export default function ProfilePage() {
   //   setEditing(false);
   //   // TODO: userService.updateProfile(form)
   // };
+  const validate = () => {
+    const nextErrors = {};
+
+    if (!form.username.trim()) {
+      nextErrors.username = "Username is required.";
+    }
+
+    if (!form.email.trim()) {
+      nextErrors.email = "Email is required.";
+    } else if (!isValidEmail(form.email.trim())) {
+      nextErrors.email = "Please enter a valid email format.";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validate() || submitting) {
+      return;
+    }
+
     const payload = {
       namaLengkap: form.fullname,
-      username: form.username,
-      email: form.email,
+      username: form.username.trim(),
+      email: form.email.trim(),
       tempatLahir: form.placeOfBirth,
       tanggalLahir: form.dateOfBirth,
       jenisKelamin: form.gender,
     };
-    console.log(payload);
+
+    setSubmitting(true);
 
     try {
       await editUserProfile({
@@ -109,12 +141,22 @@ export default function ProfilePage() {
 
       setSavedForm(form);
       setEditing(false);
-
-      alert("Profile updated successfully");
+      toast.success("Profile updated successfully.");
     } catch (err) {
-      console.error(err);
+      const message = err.response?.data?.message || "";
+      const lowered = message.toLowerCase();
 
-      alert("Failed to update profile");
+      if (lowered.includes("username")) {
+        setErrors((prev) => ({ ...prev, username: message }));
+      }
+
+      if (lowered.includes("email")) {
+        setErrors((prev) => ({ ...prev, email: message }));
+      }
+
+      toast.error(getFriendlyApiError(err, "Failed to update profile"));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -234,7 +276,7 @@ export default function ProfilePage() {
                     name="fullname"
                     value={form.fullname}
                     onChange={handleChange}
-                    disabled={!editing}
+                    disabled={!editing || submitting}
                     placeholder="Fullname"
                     className={inputClass}
                   />
@@ -247,10 +289,15 @@ export default function ProfilePage() {
                     name="username"
                     value={form.username}
                     onChange={handleChange}
-                    disabled={!editing}
+                    disabled={!editing || submitting}
                     placeholder="Username"
-                    className={inputClass}
+                    className={`${inputClass} ${errors.username ? "border-red-400" : ""}`}
                   />
+                  {errors.username && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {errors.username}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">
@@ -260,10 +307,13 @@ export default function ProfilePage() {
                     name="email"
                     value={form.email}
                     onChange={handleChange}
-                    disabled={!editing}
+                    disabled={!editing || submitting}
                     placeholder="username@gmail.com"
-                    className={inputClass}
+                    className={`${inputClass} ${errors.email ? "border-red-400" : ""}`}
                   />
+                  {errors.email && (
+                    <p className="text-xs text-red-600 mt-1">{errors.email}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -277,7 +327,7 @@ export default function ProfilePage() {
                   name="placeOfBirth"
                   value={form.placeOfBirth}
                   onChange={handleChange}
-                  disabled={!editing}
+                  disabled={!editing || submitting}
                   placeholder="Indonesia"
                   className={inputClass}
                 />
@@ -299,7 +349,7 @@ export default function ProfilePage() {
                   name="dateOfBirth"
                   value={form.dateOfBirth}
                   onChange={handleChange}
-                  disabled={!editing}
+                  disabled={!editing || submitting}
                   className={inputClass}
                 />
               </div>
@@ -319,7 +369,7 @@ export default function ProfilePage() {
                   name="gender"
                   value={form.gender}
                   onChange={handleChange}
-                  disabled={!editing}
+                  disabled={!editing || submitting}
                   className={inputClass}
                 >
                   <option value="">Select Gender</option>
@@ -335,15 +385,17 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="border border-gray-300 text-gray-600 text-sm px-6 py-2 rounded-lg hover:bg-gray-100 transition"
+                    disabled={submitting}
+                    className="border border-gray-300 text-gray-600 text-sm px-6 py-2 rounded-lg hover:bg-gray-100 transition disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="bg-gray-900 text-white text-sm px-6 py-2 rounded-lg hover:bg-gray-700 transition"
+                    disabled={submitting}
+                    className="bg-gray-900 text-white text-sm px-6 py-2 rounded-lg hover:bg-gray-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    Save
+                    {submitting ? "Saving..." : "Save"}
                   </button>
                 </>
               ) : (

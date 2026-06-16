@@ -3,7 +3,6 @@ import api from "./api";
 
 export async function getRecipes() {
   const res = await api.get("/recipes");
-  // console.log(data);
   return res.data;
 }
 

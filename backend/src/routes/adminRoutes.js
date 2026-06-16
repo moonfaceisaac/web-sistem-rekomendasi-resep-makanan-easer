@@ -5,17 +5,22 @@ import {
   handleGetRecipeAdminDetail,
   handleUpdateRecipe,
   handleAddRecipe,
-  handleDeleteRecipe
+  handleDeleteRecipe,
 } from "../controllers/adminController.js";
-import { auth } from "../middleware/authMiddleware.js";
+import { auth, requireAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/users",auth, handleGetUsers);
-router.get("/recipes",auth, handleGetRecipesAdmin);
-router.get("/recipesdetail/:id",auth, handleGetRecipeAdminDetail);
-router.put("/recipes/:id",auth, handleUpdateRecipe);
-router.post("/recipes", auth, handleAddRecipe)
-router.delete("/recipes/:id", auth, handleDeleteRecipe)
+router.get("/users", auth, requireAdmin, handleGetUsers);
+router.get("/recipes", auth, requireAdmin, handleGetRecipesAdmin);
+router.get(
+  "/recipesdetail/:id",
+  auth,
+  requireAdmin,
+  handleGetRecipeAdminDetail,
+);
+router.put("/recipes/:id", auth, requireAdmin, handleUpdateRecipe);
+router.post("/recipes", auth, requireAdmin, handleAddRecipe);
+router.delete("/recipes/:id", auth, requireAdmin, handleDeleteRecipe);
 
 export default router;

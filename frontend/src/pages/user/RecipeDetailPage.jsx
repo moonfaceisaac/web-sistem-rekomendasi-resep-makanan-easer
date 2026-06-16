@@ -105,7 +105,6 @@ export default function RecipeDetailPage() {
       </UserLayout>
     );
   }
-  console.log(recipe);
   return (
     <UserLayout>
       <div className="bg-white rounded-2xl border border-gray-200 p-6">
