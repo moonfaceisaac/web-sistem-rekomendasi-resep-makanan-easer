@@ -11,7 +11,7 @@ export async function getUsers(keyword = "", page = 1, limit = 10) {
 export async function getRecipes(keyword = "", page = 1, limit = 10) {
   //   const response = await api.get(`/admin/recipes?keyword=${keyword}`);
   const response = await api.get(
-    `http://localhost:5000/admin/recipes?query=${keyword}&page=${page}&limit=${limit}`,
+    `/admin/recipes?query=${keyword}&page=${page}&limit=${limit}`,
   );
 
   return response.data;
@@ -37,7 +37,7 @@ export async function getRecipeDetail(recipeId) {
 
 export async function createRecipe(recipeData) {
   const response = await api.post(
-    "http://localhost:5000/admin/recipes",
+    "/admin/recipes",
     recipeData,
   );
 
