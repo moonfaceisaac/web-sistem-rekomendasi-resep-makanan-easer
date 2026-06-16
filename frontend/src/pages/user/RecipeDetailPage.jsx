@@ -167,13 +167,7 @@ export default function RecipeDetailPage() {
           </div>
 
           <div className="flex-1">
-            <h2 className="font-bold text-base mb-2">OVERVIEW</h2>
-            <p className="text-sm text-gray-500 leading-relaxed mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut
-              eros libero. Maecenas lorem ex, bibendum in efficitur vitae,
-              vehicula in nibh. Pellentesque a malesuada mauris. Donec sed risus
-              eu tortor volutpat vulputate.
-            </p>
+            <h5 className="font-bold text-base mb-3">Rate this Recipe!</h5>
 
             <div className="mb-4">
               <RatingStars
@@ -264,20 +258,32 @@ export default function RecipeDetailPage() {
           <h2 className="font-bold text-base mb-3">NUTRITIONS :</h2>
           <p className="text-sm text-gray-600">
             <ul className="space-y-1">
-              <li>Calories: {
-                recipe.nutritions.calories.displayValue ??
-                 recipe.nutritions.calories.amount
-              } kcal</li>
-
-              <li>Protein: {recipe.nutritions.protein.displayValue ??
-               recipe.nutritions.protein.amount} g</li>
-
-              <li>Fat: {recipe.nutritions.fat.displayValue ??
-               recipe.nutritions.fat.amount} g</li>
+              <li>
+                Calories:{" "}
+                {recipe.nutritions.calories.displayValue ??
+                  recipe.nutritions.calories.amount}{" "}
+                kcal
+              </li>
 
               <li>
-                Carbohydrates: {recipe.nutritions.carbohydrates.displayValue ??
-                recipe.nutritions.carbohydrates.amount} g
+                Protein:{" "}
+                {recipe.nutritions.protein.displayValue ??
+                  recipe.nutritions.protein.amount}{" "}
+                g
+              </li>
+
+              <li>
+                Fat:{" "}
+                {recipe.nutritions.fat.displayValue ??
+                  recipe.nutritions.fat.amount}{" "}
+                g
+              </li>
+
+              <li>
+                Carbohydrates:{" "}
+                {recipe.nutritions.carbohydrates.displayValue ??
+                  recipe.nutritions.carbohydrates.amount}{" "}
+                g
               </li>
             </ul>
           </p>

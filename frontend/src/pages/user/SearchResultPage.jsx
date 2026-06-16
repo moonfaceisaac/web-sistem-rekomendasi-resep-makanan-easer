@@ -103,7 +103,6 @@ export default function SearchResultPage() {
                 key={recipe.recipe_id}
                 id={recipe.recipe_id}
                 title={recipe.title}
-                description={recipe.description}
                 image={`http://localhost:5000${recipe.imageUrl}`}
               />
             ))}

@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 import BookmarkButton from "./BookmarkButton"
 import api from "../../services/api"
 
-export default function RecipeCardList({ id, title, description, image }) {
+export default function RecipeCardList({ id, title, image }) {
   const navigate = useNavigate()
 
   return (
@@ -22,7 +22,6 @@ export default function RecipeCardList({ id, title, description, image }) {
       <div className="flex flex-col flex-1 min-w-0 justify-between">
         <div>
           <p className="text-sm font-semibold text-gray-800 truncate">{title}</p>
-          <p className="text-xs text-gray-400 mt-1 line-clamp-3">{description}</p>
         </div>
         <div className="flex justify-end mt-1">
           <BookmarkButton onToggle={() => {

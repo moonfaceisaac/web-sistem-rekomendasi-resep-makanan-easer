@@ -1,17 +1,10 @@
 import { useState } from "react"
 
-export default function RatingStars({ avgRating = 0, totalRatings = 0, onRate }) {
+export default function RatingStars({ avgRating = 0, totalRatings = 0, userRating = 0, onRate }) {
   const [hovered, setHovered] = useState(0)
-  const [userRating, setUserRating] = useState(0)
 
   const handleRate = (star) => {
-    if (userRating === star) {
-      setUserRating(0)
-      onRate?.(0)
-    } else {
-      setUserRating(star)
-      onRate?.(star)
-    }
+    onRate?.(star)
   }
 
   const displayRating = hovered || userRating || avgRating

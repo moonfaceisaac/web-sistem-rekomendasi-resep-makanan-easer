@@ -6,15 +6,32 @@ import RecipeGrid from "../../components/user/RecipeGrid";
 import { getRecipes } from "../../services/recipeService";
 import { getRecommendations } from "../../services/recommendationService";
 import { useAuthStore } from "../../store/authStore";
+import { getInteractionStatus } from "../../services/userService";
 
 export default function HomePage() {
   const hasInteraction = useAuthStore((s) => s.hasInteraction);
+  const setHasInteraction = useAuthStore((s) => s.setHasInteraction)
   const [recipes, setRecipes] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const recommendations = useAuthStore((s) => s.recommendations);
   const recommendationDirty = useAuthStore((s) => s.recommendationDirty);
   const setRecommendations = useAuthStore((s) => s.setRecommendations);
   // const token = useAuthStore.getState().token;
+  // 
+  useEffect(() => {
+    async function fetchInteractionStatus() {
+      try {
+        const interaction = await getInteractionStatus();
+        setHasInteraction(interaction.hasInteraction);
+        
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    fetchInteractionStatus();
+    
+  }, []);
+  
   useEffect(() => {
     async function fetchRecipes() {
       try {
@@ -82,7 +99,7 @@ export default function HomePage() {
         ) : hasInteraction ? (
           <RecipeGrid
             title="Recommended for You"
-            recipes={recommendations}
+            recipes={recommendations.slice(0,10)}
             navigateTo="/recipes/recommended"
           />
         ) : (

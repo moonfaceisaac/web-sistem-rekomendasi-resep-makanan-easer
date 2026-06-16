@@ -4,7 +4,7 @@ import axios from "axios";
 export async function getRecommendations(recipeIds) {
   const response = await axios.post("http://localhost:8000/recommend", {
     recipe_ids: recipeIds,
-    top_k: 10,
+    top_k: 30,
   });
 
   const recommendedIds = response.data.recipe_ids;

@@ -112,7 +112,7 @@ export async function editRecipesAdmin(recipeId, data) {
       description: data.description,
       ingredients: data.ingredients,
       nutritions: data.nutritions,
-      instructions: data.instructions,
+      cookingDirections: data.cookingDirections,
     },
   });
 }

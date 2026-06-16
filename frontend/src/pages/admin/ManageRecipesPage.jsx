@@ -296,6 +296,7 @@ export default function ManageRecipesPage() {
 
       if (modal.mode === "edit") {
         await updateRecipe(modal.recipe.recipe_id, payload);
+        console.log(form.instructions);
       }
 
       await fetchRecipes();
@@ -307,9 +308,68 @@ export default function ManageRecipesPage() {
       alert("Invalid nutrition JSON. Check the Nutritions field.");
     }
   };
+  // const handleEdit = async (recipeId) => {
+  //   try {
+  //     const data = await getRecipeDetail(recipeId);
+  //     let instructions = [""];
+  //     const cookingDirections = data.recipe.cookingDirections;
+
+  //     if (Array.isArray(cookingDirections?.steps)) {
+  //       instructions = cookingDirections.steps;
+  //     } else if (cookingDirections?.directions) {
+  //       instructions = cookingDirections.directions.split("\n");
+  //     }
+
+  //     setModal({
+  //       mode: "edit",
+  //       recipe: {
+  //         recipe_id: data.recipe.recipe_id,
+
+  //         title: data.recipe.title || "",
+
+  //         ingredients: Array.isArray(data.recipe.ingredients)
+  //           ? data.recipe.ingredients
+  //           : [""],
+
+  //         instructions: instructions,
+
+  //         calories: data.recipe.nutritions?.calories?.amount || "",
+
+  //         protein: data.recipe.nutritions?.protein?.amount || "",
+
+  //         fat: data.recipe.nutritions?.fat?.amount || "",
+
+  //         carbohydrates: data.recipe.nutritions?.carbohydrates?.amount || "",
+
+  //         image: data.recipe.imageUrl || null,
+  //       },
+  //     });
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
   const handleEdit = async (recipeId) => {
     try {
       const data = await getRecipeDetail(recipeId);
+
+      let instructions = [""];
+      const cookingDirections = data.recipe.cookingDirections;
+
+      if (typeof cookingDirections === "string") {
+        try {
+          const parsed = JSON.parse(cookingDirections);
+
+          if (parsed.directions) {
+            instructions = parsed.directions.split("\n").filter(Boolean);
+          }
+        } catch {
+          instructions = [""];
+        }
+      } else if (Array.isArray(cookingDirections?.steps)) {
+        instructions = cookingDirections.steps;
+      } else if (cookingDirections?.directions) {
+        instructions = cookingDirections.directions.split("\n").filter(Boolean);
+      }
 
       setModal({
         mode: "edit",
@@ -322,9 +382,7 @@ export default function ManageRecipesPage() {
             ? data.recipe.ingredients
             : [""],
 
-          instructions: Array.isArray(data.recipe.cookingDirections?.steps)
-            ? data.recipe.cookingDirections.steps
-            : [""],
+          instructions,
 
           calories: data.recipe.nutritions?.calories?.amount || "",
 
