@@ -178,3 +178,34 @@ export async function deleteRecipeAdmin(recipeId) {
     },
   });
 }
+
+// export async function deleteUserAdmin(userId) {
+//   return await prisma.user.delete({
+//     where:{
+//       user_id: Number(userId)
+//     }
+//   })
+// }
+export async function deleteUserAdmin(userId) {
+  const id = Number(userId);
+
+  return await prisma.$transaction(async (tx) => {
+    await tx.rating.deleteMany({
+      where: {
+        user_id: id,
+      },
+    });
+
+    await tx.bookmark.deleteMany({
+      where: {
+        user_id: id,
+      },
+    });
+
+    return await tx.user.delete({
+      where: {
+        user_id: id,
+      },
+    });
+  });
+}

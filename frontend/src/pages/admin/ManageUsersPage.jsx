@@ -3,6 +3,9 @@ import AdminLayout from "../../components/layout/AdminLayout";
 import ConfirmModal from "../../components/common/Modal";
 import { useEffect } from "react";
 import { getUsers } from "../../services/adminService";
+import { deleteUser } from "../../services/adminService";
+import { useToast } from "../../hooks/useToast";
+import { getFriendlyApiError } from "../../utils/httpError";
 import Pagination from "../../components/common/Pagination";
 
 export default function ManageUsersPage() {
@@ -10,11 +13,14 @@ export default function ManageUsersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [users, setUsers] = useState([]);
+  const [deletingUser, setDeletingUser] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const toast = useToast();
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const [deleteTarget, setDeleteTarget] = useState(null);
   // useEffect(() => {
   //   const timeout = setTimeout(() => {
   //     fetchUsers();
@@ -42,10 +48,24 @@ export default function ManageUsersPage() {
     return () => clearTimeout(timeout);
   }, [query, currentPage]);
 
-  const handleConfirmDelete = () => {
-    setUsers(users.filter((u) => u.id !== deleteTarget.id));
-    setDeleteTarget(null);
-    // TODO: userService.deleteUser(deleteTarget.id)
+  const handleConfirmDelete = async() => {
+    if (deletingUser){
+      return
+    }
+    setDeletingUser(true);
+    try{
+      await deleteUser(deleteTarget.user_id);
+      setUsers(users.filter((u) => u.user_id !== deleteTarget.user_id))
+      setDeleteTarget(null);
+      toast.success("User deleted successfully.");
+    }catch(err){
+      toast.error(getFriendlyApiError(err, "Failed to delete user."));
+    }finally{
+      setDeletingUser(false);
+    }
+    // setUsers(users.filter((u) => u.id !== deleteTarget.id));
+    // setDeleteTarget(null);
+    // // TODO: userService.deleteUser(deleteTarget.id)
   };
 
   return (

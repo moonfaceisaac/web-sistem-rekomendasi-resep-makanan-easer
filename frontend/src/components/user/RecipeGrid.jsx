@@ -72,7 +72,7 @@ gap-3
             key={recipe.recipe_id}
             id={recipe.recipe_id}
             title={recipe.title}
-            image={`http://localhost:5000${recipe.imageUrl}`}
+            image={`${import.meta.env.VITE_API_URL}${recipe.imageUrl}`}
           />
         ))}
       </div>

@@ -23,11 +23,6 @@ export default function RecipeCardList({ id, title, image }) {
         <div>
           <p className="text-sm font-semibold text-gray-800 truncate">{title}</p>
         </div>
-        <div className="flex justify-end mt-1">
-          <BookmarkButton onToggle={() => {
-            // TODO: bookmarkService.toggle(id)
-          }} />
-        </div>
       </div>
     </div>
   )

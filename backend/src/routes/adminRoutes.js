@@ -6,6 +6,7 @@ import {
   handleUpdateRecipe,
   handleAddRecipe,
   handleDeleteRecipe,
+  handleDeleteUserAdmin,
 } from "../controllers/adminController.js";
 import { auth, requireAdmin } from "../middleware/authMiddleware.js";
 
@@ -22,5 +23,6 @@ router.get(
 router.put("/recipes/:id", auth, requireAdmin, handleUpdateRecipe);
 router.post("/recipes", auth, requireAdmin, handleAddRecipe);
 router.delete("/recipes/:id", auth, requireAdmin, handleDeleteRecipe);
+router.delete("/user/:id", auth, requireAdmin, handleDeleteUserAdmin);
 
 export default router;

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { createBookmark } from "../../services/userService";
 import { getRandomRecipes } from "../../services/recipeService";
-
+import { useToast } from "../../hooks/useToast";
+import { getFriendlyApiError } from "../../utils/httpError";
 export default function OnboardingPage() {
   const [recipes, setRecipes] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -12,6 +13,7 @@ export default function OnboardingPage() {
 
   const navigate = useNavigate();
   const setHasInteraction = useAuthStore((s) => s.setHasInteraction);
+  const toast = useToast();
 
   const fetchRecipes = async ({ isRerandomize = false } = {}) => {
     try {
@@ -49,12 +51,14 @@ export default function OnboardingPage() {
     try {
       await Promise.all(selected.map((recipeId) => createBookmark(recipeId)));
 
-      setHasInteraction(true); //?
+      // setHasInteraction(true); //?
 
       navigate("/home");
     } catch (err) {
       console.error(err);
-      alert("Failed to save selected recipes");
+      toast.error(getFriendlyApiError(err, "Failed to save selected recipes"));
+
+      
     }
   };
 
@@ -110,7 +114,7 @@ export default function OnboardingPage() {
               <div className="w-full h-28 bg-gray-100">
                 {recipe.imageUrl ? (
                   <img
-                    src={`http://localhost:5000${recipe.imageUrl}`}
+                    src={`${import.meta.env.VITE_API_URL}${recipe.imageUrl}`}
                     alt={recipe.title}
                     className="w-full h-full object-cover"
                   />

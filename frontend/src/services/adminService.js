@@ -43,3 +43,10 @@ export async function createRecipe(recipeData) {
 
   return response.data;
 }
+
+export async function deleteUser(userId){
+  const response = await api.delete(
+    `admin/user/${userId}`
+  )
+  return response.data
+}

@@ -25,7 +25,7 @@ export default function RecommendedPage() {
             <RecipeCardList key={r.recipe_id}
               id={r.recipe_id}
               title={r.title}
-              image={`http://localhost:5000${r.imageUrl}`}
+              image={`${import.meta.env.VITE_API_URL}${r.imageUrl}`}
             />
           ))}
         </div>

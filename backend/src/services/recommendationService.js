@@ -2,7 +2,7 @@ import { prisma } from "../config/prisma.js";
 import axios from "axios";
 
 export async function getRecommendations(recipeIds) {
-  const response = await axios.post("http://localhost:8000/recommend", {
+  const response = await axios.post(process.env.RECOMMENDATION_URL, {
     recipe_ids: recipeIds,
     top_k: 30,
   });
