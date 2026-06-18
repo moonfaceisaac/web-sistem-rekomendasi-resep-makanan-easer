@@ -22,6 +22,7 @@ export const useAuthStore = create(
       accountType: null,
       user_id: null,
       hasInteraction: false,
+      profilePhoto: null,
       recommendations: [],
       recommendationDirty: true,
 
@@ -51,6 +52,7 @@ export const useAuthStore = create(
         }),
 
       setHasInteraction: (val) => set({ hasInteraction: val }),
+      setProfilePhoto: (profilePhoto) => set({ profilePhoto }),
 
       logout: () =>
         set({
@@ -59,6 +61,7 @@ export const useAuthStore = create(
           accountType: null,
           user_id: null,
           hasInteraction: false,
+          profilePhoto: null,
           recommendations: [],
           recommendationDirty: true,
         }),

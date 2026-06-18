@@ -12,6 +12,11 @@ export async function editUserProfile(payload) {
   return response.data;
 }
 
+export async function updateUserProfilePhoto(photo) {
+  const response = await api.put(`/user/profile/photo`, { photo });
+  return response.data;
+}
+
 export async function getBookmarks(keyword = "", page = 1, limit = 10) {
   const response = await api.get("/user/bookmarks", {
     params: {

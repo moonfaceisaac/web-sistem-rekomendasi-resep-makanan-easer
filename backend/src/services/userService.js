@@ -92,6 +92,31 @@ export async function editUserById(userId, data) {
   });
 }
 
+export async function updateUserPhotoById(userId, photo) {
+  const photoValue = String(photo || "").trim();
+
+  if (!photoValue) {
+    throw buildError(400, "Profile photo is required");
+  }
+
+  if (!photoValue.startsWith("data:image/")) {
+    throw buildError(400, "Invalid image format");
+  }
+
+  return await prisma.user.update({
+    where: {
+      user_id: Number(userId),
+    },
+    data: {
+      photo: photoValue,
+    },
+    select: {
+      user_id: true,
+      photo: true,
+    },
+  });
+}
+
 export async function getBookmarks(userId, keyword = "", page = 1, limit = 10) {
   const skip = (page - 1) * limit;
 

@@ -3,6 +3,7 @@ import {
   getRatings,
   getBookmarks,
   editUserById,
+  updateUserPhotoById,
   getInteractionStatus,
   createBookmark,
   deleteBookmark,
@@ -36,6 +37,23 @@ export async function handleEditProfile(req, res) {
 
     return res.status(200).json({
       message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (err) {
+    console.log(err);
+
+    return res.status(err.status || 500).json({
+      message: err.message || "Internal server error",
+    });
+  }
+}
+
+export async function handleUpdateProfilePhoto(req, res) {
+  try {
+    const updatedUser = await updateUserPhotoById(req.user.id, req.body.photo);
+
+    return res.status(200).json({
+      message: "Profile photo updated successfully",
       user: updatedUser,
     });
   } catch (err) {

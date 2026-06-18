@@ -4,11 +4,12 @@ import {
   handleGetBookmarks,
   handleGetRatings,
   handleEditProfile,
+  handleUpdateProfilePhoto,
   handleInteractionStatus,
   handleCreateBookmark,
   handleDeleteBookmark,
   handleCreateRating,
-  handleDeleteRating
+  handleDeleteRating,
 } from "../controllers/userController.js";
 import { auth } from "../middleware/authMiddleware.js";
 
@@ -17,12 +18,12 @@ const router = express.Router();
 router.get("/bookmarks", auth, handleGetBookmarks);
 router.get("/profile", auth, handleGetProfile);
 router.put("/profile", auth, handleEditProfile);
+router.put("/profile/photo", auth, handleUpdateProfilePhoto);
 router.get("/ratings", auth, handleGetRatings);
 router.get("/interaction-status", auth, handleInteractionStatus);
 router.post("/bookmarks", auth, handleCreateBookmark);
 router.delete("/bookmarks", auth, handleDeleteBookmark);
 router.post("/rating", auth, handleCreateRating);
 router.delete("/rating", auth, handleDeleteRating);
-
 
 export default router;
