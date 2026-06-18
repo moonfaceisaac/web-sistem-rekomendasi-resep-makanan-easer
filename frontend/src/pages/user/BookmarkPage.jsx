@@ -89,7 +89,7 @@ export default function BookmarkPage() {
                   key={bookmark.recipe.recipe_id}
                   id={bookmark.recipe.recipe_id}
                   title={bookmark.recipe.title}
-                  image={`http://localhost:5000${bookmark.recipe.imageUrl}`}
+                  image={`${import.meta.env.VITE_API_URL}${bookmark.recipe.imageUrl}`}
                 />
               ))}
 

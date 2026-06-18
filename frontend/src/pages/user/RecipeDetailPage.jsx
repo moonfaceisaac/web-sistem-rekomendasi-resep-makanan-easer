@@ -136,7 +136,7 @@ export default function RecipeDetailPage() {
           <div className="w-full md:w-64 h-56 shrink-0 bg-gray-100 border border-gray-200 rounded-xl flex items-center justify-center overflow-hidden">
             {recipe.imageUrl ? (
               <img
-                src={`http://localhost:5000${recipe.imageUrl}`}
+                src={`${import.meta.env.VITE_API_URL}${recipe.imageUrl}`}
                 alt={recipe.title}
                 className="w-full h-full object-cover"
               />

@@ -49,7 +49,7 @@ export default function OnboardingPage() {
     try {
       await Promise.all(selected.map((recipeId) => createBookmark(recipeId)));
 
-      setHasInteraction(true); //?
+
 
       navigate("/home");
     } catch (err) {
@@ -110,7 +110,7 @@ export default function OnboardingPage() {
               <div className="w-full h-28 bg-gray-100">
                 {recipe.imageUrl ? (
                   <img
-                    src={`http://localhost:5000${recipe.imageUrl}`}
+                    src={`${import.meta.env.VITE_API_URL}${recipe.imageUrl}`}
                     alt={recipe.title}
                     className="w-full h-full object-cover"
                   />
